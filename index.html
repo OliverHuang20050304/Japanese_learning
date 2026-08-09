@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>N4 日文單字 ｜ 背單字練習</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🈁</text></svg>">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1 class="logo"><span class="logo-mark">語</span> N4 単語帳</h1>
+    <div class="topbar-right">
+      <div class="progress-mini" title="已標記為「已背」的比例">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="progressText">0 / 0</span>
+      </div>
+      <button id="themeBtn" class="icon-btn" title="切換深色／淺色模式">🌙</button>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-view="list">📖 單字表</button>
+    <button class="tab" data-view="card">🃏 單字卡</button>
+    <button class="tab" data-view="quiz">📝 測驗</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============ 單字表 ============ -->
+  <section id="view-list" class="view active">
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="搜尋 單字／假名／中文／例句…" autocomplete="off">
+      <div class="chips" id="catChips">
+        <button class="chip active" data-cat="全部">全部</button>
+        <button class="chip" data-cat="動詞">動詞</button>
+        <button class="chip" data-cat="形容詞">形容詞</button>
+        <button class="chip" data-cat="名詞">名詞</button>
+        <button class="chip" data-cat="副詞・其他">副詞・其他</button>
+      </div>
+      <div class="filters">
+        <label class="switch"><input type="checkbox" id="onlyFav"><span>只看收藏 ★</span></label>
+        <label class="switch"><input type="checkbox" id="hideLearned"><span>隱藏已背</span></label>
+        <label class="switch"><input type="checkbox" id="hideMeaning"><span>遮住中文（自我測驗）</span></label>
+        <select id="sortBy">
+          <option value="default">五十音順</option>
+          <option value="kana">依假名 A→Z</option>
+          <option value="random">隨機打散</option>
+        </select>
+      </div>
+      <div class="count" id="countText"></div>
+    </div>
+    <div id="wordList" class="word-list"></div>
+    <button id="loadMore" class="big-btn ghost" hidden>載入更多</button>
+    <div id="emptyList" class="empty" hidden>找不到符合條件的單字 🥲</div>
+  </section>
+
+  <!-- ============ 單字卡 ============ -->
+  <section id="view-card" class="view">
+    <div class="card-stage">
+      <div class="card-meta">
+        <span id="cardCounter">0 / 0</span>
+        <label class="switch"><input type="checkbox" id="cardReverse"><span>中文 → 日文</span></label>
+        <button class="mini-btn" id="cardShuffle">🔀 洗牌</button>
+      </div>
+
+      <div class="flashcard" id="flashcard">
+        <div class="flash-inner">
+          <div class="flash-face flash-front">
+            <div class="flash-kana" id="fKana"></div>
+            <div class="flash-word" id="fWord"></div>
+            <div class="flash-hint">點一下翻面</div>
+          </div>
+          <div class="flash-face flash-back">
+            <div class="flash-pos" id="bPos"></div>
+            <div class="flash-mean" id="bMean"></div>
+            <div class="flash-sub" id="bSub"></div>
+            <div class="flash-ex" id="bEx"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-controls">
+        <button class="ctrl" id="cardPrev">← 上一個</button>
+        <button class="ctrl speak" id="cardSpeak">🔊 發音</button>
+        <button class="ctrl" id="cardFav">☆ 收藏</button>
+        <button class="ctrl" id="cardLearned">✓ 已背</button>
+        <button class="ctrl primary" id="cardNext">下一個 →</button>
+      </div>
+      <div id="cardConj" class="card-conj" hidden></div>
+      <p class="kbd-hint">鍵盤：<kbd>空白</kbd> 翻面 ・ <kbd>←</kbd> <kbd>→</kbd> 換卡 ・ <kbd>S</kbd> 發音</p>
+      <div id="cardEmpty" class="empty" hidden>目前的篩選條件下沒有單字，請回單字表調整。</div>
+    </div>
+  </section>
+
+  <!-- ============ 測驗 ============ -->
+  <section id="view-quiz" class="view">
+    <div id="quizSetup" class="quiz-panel">
+      <h2>開始測驗</h2>
+      <div class="setup-row">
+        <span class="setup-label">出題方向</span>
+        <div class="chips">
+          <button class="chip active" data-dir="ja2zh">日文 → 中文</button>
+          <button class="chip" data-dir="zh2ja">中文 → 日文</button>
+          <button class="chip" data-dir="kana">漢字 → 假名</button>
+          <button class="chip" data-dir="group">動詞分類</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <span class="setup-label">題數</span>
+        <div class="chips">
+          <button class="chip" data-num="5">5 題</button>
+          <button class="chip active" data-num="10">10 題</button>
+          <button class="chip" data-num="20">20 題</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <span class="setup-label">出題範圍</span>
+        <div class="chips">
+          <button class="chip active" data-scope="all">全部單字</button>
+          <button class="chip" data-scope="filter">目前單字表篩選</button>
+          <button class="chip" data-scope="fav">只考收藏 ★</button>
+          <button class="chip" data-scope="unlearned">只考未背</button>
+        </div>
+      </div>
+      <p class="quiz-note" id="quizPoolNote"></p>
+      <button class="big-btn" id="quizStart">開始 →</button>
+      <div class="stats" id="quizStats"></div>
+    </div>
+
+    <div id="quizPlay" class="quiz-panel" hidden>
+      <div class="quiz-head">
+        <span id="quizProgress">1 / 10</span>
+        <div class="progress-bar wide"><div class="progress-fill" id="quizBar"></div></div>
+        <span id="quizScore">✓ 0</span>
+      </div>
+      <div class="question" id="quizQuestion"></div>
+      <button class="mini-btn speak-q" id="quizSpeak" hidden>🔊 聽發音</button>
+      <div class="options" id="quizOptions"></div>
+      <div class="explain" id="quizExplain" hidden></div>
+      <button class="big-btn" id="quizNext" hidden>下一題 →</button>
+    </div>
+
+    <div id="quizResult" class="quiz-panel" hidden>
+      <h2>測驗結果</h2>
+      <div class="score-circle"><span id="scorePct">0%</span></div>
+      <p class="score-line" id="scoreLine"></p>
+      <div id="wrongList" class="wrong-list"></div>
+      <div class="result-btns">
+        <button class="big-btn" id="quizAgain">再考一次</button>
+        <button class="big-btn ghost" id="quizBack">回到設定</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  共 <b id="totalWords">0</b> 個 N4 單字 ・ 學習紀錄自動存在你的瀏覽器
+  <button class="link-btn" id="resetBtn">清除學習紀錄</button>
+</footer>
+
+<script src="js/data/a1.js"></script>
+<script src="js/data/a2.js"></script>
+<script src="js/data/a3.js"></script>
+<script src="js/data/a4.js"></script>
+<script src="js/data/ka1.js"></script>
+<script src="js/data/ka2.js"></script>
+<script src="js/data/ka3.js"></script>
+<script src="js/data/ka4.js"></script>
+<script src="js/data/sa1.js"></script>
+<script src="js/data/sa2.js"></script>
+<script src="js/data/sa3.js"></script>
+<script src="js/data/sa4.js"></script>
+<script src="js/data/ta1.js"></script>
+<script src="js/data/ta2.js"></script>
+<script src="js/data/ta3.js"></script>
+<script src="js/data/na.js"></script>
+<script src="js/data/ha1.js"></script>
+<script src="js/data/ha2.js"></script>
+<script src="js/data/ha3.js"></script>
+<script src="js/data/ma1.js"></script>
+<script src="js/data/ma2.js"></script>
+<script src="js/data/ya.js"></script>
+<script src="js/data/ra.js"></script>
+<script src="js/data/wa.js"></script>
+<script src="js/conjugate.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
