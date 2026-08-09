@@ -1,7 +1,9 @@
 # N4 単語帳 — 日文背單字網站
 
+### 👉 線上版：https://oliverhuang20050304.github.io/Japanese_learning/
+
 純靜態網頁（HTML / CSS / JavaScript），不需安裝任何東西。
-**直接用瀏覽器打開 `index.html` 就能用。**
+線上直接開就能用，也可以把整個資料夾抓下來，**用瀏覽器打開 `index.html`**。
 
 收錄 **941 個 JLPT N4 範圍單字**。每個單字都有：
 
@@ -81,13 +83,20 @@ node tools/check.js a1.js      # 只檢查某個檔
 它會檢查每個字是否有 3 句例句、例句是否真的用到該單字（會比對所有活用形）、
 是否混入英數字母、句尾標點、例句重複、單字重複。
 
-## 放到網路上
+## 部署
 
-純靜態網站，整個資料夾丟上去就能用：
+本站已透過 **GitHub Pages** 發布於
+<https://oliverhuang20050304.github.io/Japanese_learning/>
+（來源：`main` 分支根目錄）。
 
-- **GitHub Pages**：推上 repo → Settings → Pages → 選 branch
-- **Netlify / Vercel**：直接把資料夾拖進去
-- 本機伺服器：`python3 -m http.server 8000`，再開 http://localhost:8000
+推上 `main` 後會自動重新部署，約一分鐘生效：
+
+```bash
+git add -A && git commit -m "更新單字" && git push
+```
+
+在本機預覽的話，直接開 `index.html`，或起一個伺服器：
+`python3 -m http.server 8000` → http://localhost:8000
 
 ## 小提醒
 
