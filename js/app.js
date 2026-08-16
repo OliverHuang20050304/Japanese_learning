@@ -695,6 +695,15 @@
     save(); updateProgress(); renderList(); renderCard(); renderToday(); updatePoolNote();
   });
 
+  /* ---------- 桌面版（Tauri）原生選單 ---------- */
+  if (window.__TAURI__ && window.__TAURI__.event) {
+    window.__TAURI__.event.listen('menu:goto', function (e) {
+      location.hash = e.payload; showView(e.payload, true);
+    });
+    window.__TAURI__.event.listen('menu:toggle-theme', function () { $('#themeBtn').click(); });
+    document.documentElement.classList.add('is-desktop');
+  }
+
   /* ---------- 啟動 ---------- */
   S.ensureOrder(store, VOCAB);
   save();

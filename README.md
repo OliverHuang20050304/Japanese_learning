@@ -64,10 +64,14 @@
 index.html            頁面結構
 css/style.css         樣式（含深色模式）
 js/conjugate.js       活用引擎 — 由辭書形即時生成各種型態
+js/srs.js             間隔重複排程引擎
 js/app.js             介面與功能邏輯
 js/data/*.js          單字資料，依五十音分 24 個檔
 tools/check.js        資料品質檢查腳本（941 字 × 3 例句）
 tools/srs-test.js     SRS 排程邏輯測試（55 項）
+
+build-dist.mjs        把前端檔案收進 dist/ 供桌面版打包
+src-tauri/            桌面版外殼（Rust）
 ```
 
 > 單字來源 PDF（`src/tango-n4.pdf`）為他人著作，頁尾註明「僅供個人・教室學習使用，
@@ -121,6 +125,42 @@ git add -A && git commit -m "更新單字" && git push
 
 在本機預覽的話，直接開 `index.html`，或起一個伺服器：
 `python3 -m http.server 8000` → http://localhost:8000
+
+## 桌面版（macOS app）
+
+用 [Tauri](https://tauri.app) 包成原生 `.app`。它使用 macOS 內建的 WebKit，**不像 Electron 得整包 Chromium**，成品約 10MB 而不是 150MB。
+
+```bash
+npm install          # 只需第一次
+npm run app:build    # 產出 .app 與 .dmg
+npm run app:dev      # 開發模式，直接開視窗
+```
+
+產物位置：
+
+```
+src-tauri/target/release/bundle/macos/N4 単語帳.app
+src-tauri/target/release/bundle/dmg/N4 単語帳_1.0.0_aarch64.dmg
+```
+
+**網頁版與桌面版共用同一份前端程式碼**（`index.html` / `css` / `js`），
+`build-dist.mjs` 只是把它們收進 `dist/` 給 Tauri 打包，不會分叉成兩套。
+所以之後加功能照常改前端就好，網頁版 `git push` 自動更新，桌面版重跑一次 `npm run app:build`。
+
+原生選單列：
+
+| 選單 | 內容 |
+|---|---|
+| N4 単語帳 | 關於、隱藏、結束（⌘Q） |
+| 編輯 | 復原／剪下／拷貝／貼上／全選（讓搜尋框能用 ⌘C ⌘V） |
+| 檢視 | 今日 ⌘1、單字表 ⌘2、單字卡 ⌘3、測驗 ⌘4、切換深色 ⌘D、全螢幕 |
+| 視窗 | 最小化、關閉視窗 |
+
+### 兩件要知道的事
+
+- **學習紀錄不共通**：localStorage 依來源隔離，桌面版與瀏覽器版的進度是兩份。
+- **未經簽章**：自己用沒問題（第一次開啟若被 Gatekeeper 擋下，於 app 上按右鍵 →「打開」即可）。
+  要發給別人而不跳警告，需要 Apple Developer 帳號做簽章與公證。
 
 ## 小提醒
 

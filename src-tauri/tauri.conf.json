@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "N4 単語帳",
+  "mainBinaryName": "n4-tango",
+  "version": "1.0.0",
+  "identifier": "com.oliverhuang.n4tango",
+  "build": {
+    "frontendDist": "../dist",
+    "beforeBuildCommand": "node build-dist.mjs",
+    "beforeDevCommand": "node build-dist.mjs"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "N4 単語帳",
+        "width": 1000,
+        "height": 840,
+        "minWidth": 360,
+        "minHeight": 540,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "Education",
+    "shortDescription": "N4 日文背單字",
+    "longDescription": "941 個 JLPT N4 單字，每字附中文解釋、假名、詞性與三句例句；動詞／形容詞附完整活用表，並以間隔重複排程安排每日複習。",
+    "copyright": "© 2026 Oliver Huang",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": { "minimumSystemVersion": "10.15" }
+  }
+}

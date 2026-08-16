@@ -2,5 +2,11 @@
 # 故不納入版控，以免公開散布。需要的人請自行向原作者取得。
 src/*.pdf
 
+# 建置產物
+dist/
+node_modules/
+src-tauri/target/
+src-tauri/gen/
+
 # 系統檔
 .DS_Store

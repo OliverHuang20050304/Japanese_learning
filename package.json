@@ -1,0 +1,16 @@
+{
+  "name": "n4-tango",
+  "version": "1.0.0",
+  "description": "N4 単語帳 — 日文背單字（桌面版）",
+  "private": true,
+  "scripts": {
+    "dist": "node build-dist.mjs",
+    "check": "node tools/check.js && node tools/srs-test.js",
+    "tauri": "tauri",
+    "app:dev": "tauri dev",
+    "app:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
