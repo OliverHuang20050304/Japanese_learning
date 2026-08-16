@@ -32,7 +32,7 @@
   function load() {
     var d = {
       fav: [], theme: 'light', quiz: { rounds: 0, right: 0, total: 0 },
-      srs: {}, order: [], settings: { newPerDay: 10 },
+      srs: {}, order: [], settings: { newPerDay: 10, furi: 'on', voice: '' },
       streak: { days: 0, last: null }, daily: { date: null, newDone: 0, reviewDone: 0 }
     };
     try {
@@ -44,7 +44,7 @@
       if (p.quiz) d.quiz = p.quiz;
       if (p.srs) d.srs = p.srs;
       if (Array.isArray(p.order)) d.order = p.order;
-      if (p.settings) d.settings = p.settings;
+      if (p.settings) d.settings = Object.assign(d.settings, p.settings);
       if (p.streak) d.streak = p.streak;
       if (p.daily) d.daily = p.daily;
       /* 舊版的「已背」清單 → 匯入成 Lv.3（七天後複習），不歸零重來 */
@@ -74,6 +74,19 @@
   }
   var shuffleArr = S.shuffle;
 
+  /* 例句的假名標註：把「漢字[かんじ]」轉成 <ruby> */
+  function ruby(furi, plain) {
+    if (store.settings.furi === 'off' || !furi) return esc(plain || furi || '');
+    var out = '', last = 0, re = /([一-龯々〆]+)\[([^\]]+)\]/g, m;
+    while ((m = re.exec(furi)) !== null) {
+      out += esc(furi.slice(last, m.index));
+      out += '<ruby>' + esc(m[1]) + '<rt>' + esc(m[2]) + '</rt></ruby>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(furi.slice(last));
+  }
+  function applyFuri() { document.documentElement.setAttribute('data-furi', store.settings.furi); }
+
   function rec(id) { return store.srs[id]; }
   function lvOf(id) { var r = rec(id); return r ? (r.lv || 0) : -1; }   // -1 = 未學
   function isMastered(id) { return lvOf(id) >= S.MASTER_LV; }
@@ -91,17 +104,64 @@
   });
   applyTheme();
 
+  /* macOS 內建了一批「搞笑語音」（Eddy、Rocko、Grandpa…），
+     getVoices() 常常把它們排在最前面，直接取第一個就會聽到怪腔怪調。
+     這裡改成替每個日文語音評分，挑最自然的那個。 */
+  var NOVELTY = /(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|bells|bubbles|jester|organ|superstar|trinoids|whisper|wobble|zarvox|boing|bahh|cellos|deranged|hysterical|junior|ralph|albert|bad news|good news)/i;
+  var GOOD_JA = /(kyoko|o-?ren|otoya|hattori|ayumi|nanami|ichiro|mizuki|sayaka|haruka)/i;
+  var FEMALE_JA = /(kyoko|o-?ren|ayumi|nanami|mizuki|sayaka|haruka)/i;   // 較接近「Google 小姐」的女聲
+
+  function voiceScore(v) {
+    var n = v.name || '', s = 0;
+    if (/google/i.test(n)) s += 100;                      // Chrome 的「Google 日本語」最自然
+    if (GOOD_JA.test(n)) s += 60;                         // macOS/Windows 的標準日文語音
+    if (FEMALE_JA.test(n)) s += 10;                       // 預設挑女聲，聽起來較清晰自然
+    if (/(premium|enhanced|拡張|プレミアム|siri)/i.test(n)) s += 30;   // 加強版音質更好
+    if (NOVELTY.test(n)) s -= 200;                        // 搞笑語音排到最後
+    if (!v.localService) s += 3;
+    return s;
+  }
+  function jaVoices() {
+    if (!('speechSynthesis' in window)) return [];
+    return speechSynthesis.getVoices()
+      .filter(function (v) { return /^ja/i.test(v.lang); })
+      .sort(function (a, b) { return voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name); });
+  }
   var jaVoice = null;
   function pickVoice() {
-    if (!('speechSynthesis' in window)) return;
-    jaVoice = speechSynthesis.getVoices().filter(function (v) { return /^ja/i.test(v.lang); })[0] || null;
+    var list = jaVoices();
+    if (!list.length) { jaVoice = null; return; }
+    var saved = store.settings.voice;
+    jaVoice = (saved && list.filter(function (v) { return v.name === saved; })[0]) || list[0];
+    renderVoiceOptions(list);
   }
-  if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  function renderVoiceOptions(list) {
+    var sel = $('#voiceSel');
+    if (!sel) return;
+    if (!list.length) {
+      sel.innerHTML = '<option>找不到日文語音</option>';
+      $('#voiceNote').textContent = '這個瀏覽器沒有可用的日文語音。';
+      return;
+    }
+    sel.innerHTML = list.map(function (v) {
+      return '<option value="' + esc(v.name) + '"' + (jaVoice && v.name === jaVoice.name ? ' selected' : '') +
+        '>' + esc(v.name) + (NOVELTY.test(v.name) ? '（趣味音效）' : '') + '</option>';
+    }).join('');
+    $('#voiceNote').textContent = jaVoice && /kyoko|o-?ren/i.test(jaVoice.name)
+      ? '想要更自然的音質：系統設定 →「輔助使用」→「朗讀」→「系統語音」，把 Kyoko 下載成加強版。'
+      : '目前使用：' + (jaVoice ? jaVoice.name : '—');
+  }
+  if ('speechSynthesis' in window) {
+    pickVoice();
+    speechSynthesis.onvoiceschanged = pickVoice;      // 語音清單常常是非同步載入的
+  }
   function speak(text) {
     if (!('speechSynthesis' in window) || !text) return;
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ja-JP'; u.rate = 0.9;
+    u.lang = 'ja-JP';
+    u.rate = 0.88;
+    u.pitch = 1;
     if (jaVoice) u.voice = jaVoice;
     speechSynthesis.speak(u);
   }
@@ -193,6 +253,18 @@
     }).join('');
   }
 
+  $('#furiMode').addEventListener('change', function (e) {
+    store.settings.furi = e.target.value;
+    applyFuri(); save(); renderList(false); if (sess) showCard();
+  });
+  $('#voiceSel').addEventListener('change', function (e) {
+    store.settings.voice = e.target.value;
+    save(); pickVoice();
+  });
+  $('#voiceTest').addEventListener('click', function () {
+    speak('日本語の勉強を続けています。');
+  });
+
   $('#newPerDay').addEventListener('change', function (e) {
     store.settings.newPerDay = parseInt(e.target.value, 10);
     save(); renderToday();
@@ -239,7 +311,8 @@
     $('#sessMean').textContent = v.m;
     $('#sessEx').innerHTML = v.ex.map(function (e, i) {
       return '<div class="ex"><span class="ex-no">' + '①②③'.charAt(i) + '</span>' +
-        '<div><div class="ja">' + esc(e[0]) + '</div><div class="zh">' + esc(e[1]) + '</div></div></div>';
+        '<div><div class="ja" data-plain="' + esc(e[0]) + '">' + ruby(e[2], e[0]) + '</div>' +
+        '<div class="zh">' + esc(e[1]) + '</div></div></div>';
     }).join('');
     $('#sessConj').innerHTML = conjHTML(v);
     $('#sessReveal').hidden = false;
@@ -290,7 +363,10 @@
 
   $('#sessShow').addEventListener('click', revealCard);
   $('#sessCard').addEventListener('click', function (e) {
-    if (e.target.closest('.ex')) { speak(e.target.closest('.ex').querySelector('.ja').textContent); return; }
+    if (e.target.closest('.ex')) {
+      var jaEl = e.target.closest('.ex').querySelector('.ja');
+      speak(jaEl.dataset.plain || jaEl.textContent); return;
+    }
     if ($('#sessReveal').hidden) revealCard();
   });
   $('#gradeBtns').addEventListener('click', function (e) {
@@ -365,7 +441,8 @@
     var isFav = fav.has(v.id);
     var ex = v.ex.map(function (e, i) {
       return '<div class="ex"><span class="ex-no">' + '①②③'.charAt(i) + '</span>' +
-        '<div><div class="ja">' + esc(e[0]) + '</div><div class="zh">' + esc(e[1]) + '</div></div></div>';
+        '<div><div class="ja" data-plain="' + esc(e[0]) + '">' + ruby(e[2], e[0]) + '</div>' +
+        '<div class="zh">' + esc(e[1]) + '</div></div></div>';
     }).join('');
     var hasConj = /^動詞/.test(v.p) || /形容詞$/.test(v.p);
     return '<article class="word' + (isMastered(v.id) ? ' learned' : '') + '" data-id="' + esc(v.id) + '">' +
@@ -421,7 +498,7 @@
     }
     if (e.target.classList.contains('masked')) { e.target.classList.remove('masked'); return; }
     var exEl = e.target.closest('.ex');
-    if (exEl) speak(exEl.querySelector('.ja').textContent);
+    if (exEl) { var ja = exEl.querySelector('.ja'); speak(ja.dataset.plain || ja.textContent); }
   });
 
   $('#search').addEventListener('input', function (e) { filter.q = e.target.value; renderList(); });
@@ -476,7 +553,7 @@
     $('#bSub').textContent = v.w === v.k ? '' : v.k;
     $('#bPos').textContent = v.p;
     $('#bEx').innerHTML = v.ex.map(function (e) {
-      return '<p class="ex-ja">' + esc(e[0]) + '</p><p class="ex-zh">' + esc(e[1]) + '</p>';
+      return '<p class="ex-ja">' + ruby(e[2], e[0]) + '</p><p class="ex-zh">' + esc(e[1]) + '</p>';
     }).join('');
 
     var fb = $('#cardFav'), lb = $('#cardLearned');
@@ -639,7 +716,7 @@
     $('#quizExplain').innerHTML =
       '<div><b>' + esc(v.w) + '</b>' + (v.w === v.k ? '' : '　<span class="dim">' + esc(v.k) + '</span>') +
       '　<span class="w-pos">' + esc(v.p) + '</span></div><div>' + esc(v.m) + '</div>' +
-      (ex ? '<p class="ex-ja" style="margin:8px 0 0">' + esc(ex[0]) + '</p><p class="ex-zh" style="margin:0">' + esc(ex[1]) + '</p>' : '');
+      (ex ? '<p class="ex-ja" style="margin:8px 0 0">' + ruby(ex[2], ex[0]) + '</p><p class="ex-zh" style="margin:0">' + esc(ex[1]) + '</p>' : '');
     $('#quizExplain').hidden = false;
     $('#quizNext').hidden = false;
     $('#quizNext').textContent = quiz.i === quiz.qs.length - 1 ? '看結果 →' : '下一題 →';
@@ -707,6 +784,8 @@
   /* ---------- 啟動 ---------- */
   S.ensureOrder(store, VOCAB);
   save();
+  applyFuri();
+  $('#furiMode').value = store.settings.furi;
   $('#totalWords').textContent = VOCAB.length;
   updateProgress();
   renderToday();

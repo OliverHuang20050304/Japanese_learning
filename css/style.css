@@ -402,3 +402,16 @@ kbd{
   .grade{font-size:14px}
   .lvbar-l{font-size:8.5px}
 }
+
+/* ===== 例句假名（ruby） ===== */
+.w-ex .ja, .ex-ja, .sess-ex .ja{line-height:2.25}
+ruby{ruby-align:center}
+ruby rt{
+  font-size:.58em;font-weight:400;color:var(--text-dim);
+  letter-spacing:.02em;transform:translateY(.12em);
+}
+html[data-furi="hover"] ruby rt{visibility:hidden}
+html[data-furi="hover"] ruby:hover rt{visibility:visible}
+.voice-wrap{display:flex;gap:6px;align-items:center}
+.voice-wrap select{max-width:190px}
+.voice-note{font-size:12px;color:var(--text-dim);margin:-6px 0 0;line-height:1.6}

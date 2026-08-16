@@ -45,6 +45,24 @@
       <p class="today-hint" id="todayHint"></p>
 
       <div class="setting-row">
+        <label for="furiMode">例句假名標註</label>
+        <select id="furiMode">
+          <option value="on">一律顯示</option>
+          <option value="hover">滑過才顯示</option>
+          <option value="off">不顯示</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label for="voiceSel">朗讀語音</label>
+        <span class="voice-wrap">
+          <select id="voiceSel"></select>
+          <button class="mini-btn" id="voiceTest">試聽</button>
+        </span>
+      </div>
+      <p class="voice-note" id="voiceNote"></p>
+
+      <div class="setting-row">
         <label for="newPerDay">每日新字量</label>
         <select id="newPerDay">
           <option value="5">5 個</option>
