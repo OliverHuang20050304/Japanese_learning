@@ -25,6 +25,7 @@
     <button class="tab" data-view="list">📖 單字表</button>
     <button class="tab" data-view="card">🃏 單字卡</button>
     <button class="tab" data-view="quiz">📝 測驗</button>
+    <button class="tab" data-view="dict">🔍 查字典</button>
   </nav>
 </header>
 
@@ -143,7 +144,7 @@
     </div>
     <div id="wordList" class="word-list"></div>
     <button id="loadMore" class="big-btn ghost" hidden>載入更多</button>
-    <div id="emptyList" class="empty" hidden>找不到符合條件的單字 🥲</div>
+    <div id="emptyList" class="empty" hidden>本站沒有這個單字 🥲<br><button class="mini-btn" id="toDict" style="margin-top:10px">🔍 到字典查查看</button></div>
   </section>
 
   <!-- ============ 單字卡 ============ -->
@@ -181,6 +182,20 @@
       <div id="cardConj" class="card-conj" hidden></div>
       <p class="kbd-hint">鍵盤：<kbd>空白</kbd> 翻面 ・ <kbd>←</kbd> <kbd>→</kbd> 換卡 ・ <kbd>S</kbd> 發音</p>
       <div id="cardEmpty" class="empty" hidden>目前的篩選條件下沒有單字，請回單字表調整。</div>
+    </div>
+  </section>
+
+  <!-- ============ 查字典 ============ -->
+  <section id="view-dict" class="view">
+    <div class="dict-panel">
+      <div class="dict-search">
+        <input type="search" id="dictInput" placeholder="輸入日文單字，例如：沸かす" autocomplete="off">
+        <button class="big-btn" id="dictGo">查詢</button>
+      </div>
+      <p class="dict-hint">先查本站的 941 個單字（離線、有例句與活用表）；查不到再問中文維基詞典。</p>
+      <div id="dictLocal"></div>
+      <div id="dictRemote"></div>
+      <p class="dict-credit" id="dictCredit" hidden></p>
     </div>
   </section>
 
@@ -277,6 +292,7 @@
 <script src="js/data/wa.js"></script>
 <script src="js/conjugate.js"></script>
 <script src="js/srs.js"></script>
+<script src="js/dict.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

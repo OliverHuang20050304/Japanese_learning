@@ -196,6 +196,7 @@
     if (name === 'today') renderToday();
     if (name === 'card') refreshCardDeck();
     if (name === 'quiz') updatePoolNote();
+    if (name === 'dict') setTimeout(function () { $('#dictInput').focus(); }, 50);
     if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   $$('.tab').forEach(function (t) {
@@ -600,6 +601,99 @@
     else if (e.key === 'ArrowRight') moveCard(1);
     else if (e.key === 'ArrowLeft') moveCard(-1);
     else if (e.key === 's' || e.key === 'S') { var v = deck[deckPos]; if (v) speak(v.k); }
+  });
+
+  /* =========================================================
+     查字典
+     ========================================================= */
+  var IS_DESKTOP = !!(window.__TAURI__ && window.__TAURI__.event);
+
+  function dictLocal(q) {
+    var s = q.trim().toLowerCase();
+    if (!s) return [];
+    var exact = [], partial = [];
+    VOCAB.forEach(function (v) {
+      if (v.w === q || v.k === q) exact.push(v);
+      else if (v.w.indexOf(q) >= 0 || v.k.indexOf(q) >= 0 || v.m.toLowerCase().indexOf(s) >= 0) partial.push(v);
+    });
+    return exact.concat(partial).slice(0, 8);
+  }
+
+  function renderDict(q) {
+    var local = dictLocal(q);
+    $('#dictLocal').innerHTML = local.length
+      ? '<div class="dict-sec"><div class="dict-sec-title">本站單字' +
+        '<span class="dict-badge">離線 ・ 有例句與活用表</span></div>' +
+        '<div class="word-list">' + local.map(wordHTML).join('') + '</div></div>'
+      : '';
+
+    var exactHit = local.some(function (v) { return v.w === q || v.k === q; });
+    $('#dictCredit').hidden = true;
+    $('#dictRemote').innerHTML = '<div class="dict-sec"><div class="dict-sec-title">中文維基詞典</div>' +
+      '<div class="dict-msg">查詢中…</div></div>';
+
+    window.Dict.lookup(q).then(function (r) {
+      var head = '<div class="dict-sec"><div class="dict-sec-title">中文維基詞典' +
+        (r.cached ? '<span class="dict-badge cached">來自本機快取</span>' : '') + '</div>';
+      var body;
+      if (r.status === 'ok') {
+        body = '<div class="dict-entry"><div class="dict-head">' +
+          '<span class="dict-word">' + esc(q) + '</span>' +
+          (r.data.pron ? '<span class="dict-pron">' + esc(r.data.pron) + '</span>' : '') +
+          '<button class="mini-btn dict-speak">🔊</button></div>' +
+          r.data.senses.map(function (se) {
+            return '<div class="dict-sense">' + (se.pos ? '<span class="dict-pos">' + esc(se.pos) + '</span>' : '') +
+              '<ul class="dict-defs">' + se.defs.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul></div>';
+          }).join('') + '</div>';
+        var url = window.Dict.pageUrl(q);
+        $('#dictCredit').innerHTML = '釋義取自<b>中文維基詞典</b>，授權 CC BY-SA 4.0。' +
+          (IS_DESKTOP ? '<br>原文網址：<span class="dict-url">' + esc(url) + '</span>'
+                      : '<br><a href="' + esc(url) + '" target="_blank" rel="noopener">在維基詞典查看原文 ↗</a>');
+        $('#dictCredit').hidden = false;
+      } else if (r.status === 'notfound') {
+        body = '<div class="dict-msg">維基詞典裡沒有「' + esc(q) + '」的日語條目。' +
+          (exactHit ? '' : '<br>可以試試換成辭書形（例如「沸かした」→「沸かす」）。') + '</div>';
+      } else if (r.status === 'rate') {
+        body = '<div class="dict-msg warn">查詢太頻繁，維基詞典暫時擋下了請求。<br>請等幾秒再試一次。</div>';
+      } else {
+        body = '<div class="dict-msg warn">連不上維基詞典' +
+          (navigator.onLine ? '。' : '（目前離線）。') + '<br>本站的 941 個單字仍可正常查詢。</div>';
+      }
+      $('#dictRemote').innerHTML = head + body + '</div>';
+    });
+  }
+
+  function runDict(q) {
+    q = (q || '').trim();
+    if (!q) return;
+    $('#dictInput').value = q;
+    renderDict(q);
+  }
+  $('#dictGo').addEventListener('click', function () { runDict($('#dictInput').value); });
+  $('#dictInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') runDict($('#dictInput').value);
+  });
+  $('#dictRemote').addEventListener('click', function (e) {
+    if (e.target.closest('.dict-speak')) speak($('#dictInput').value.trim());
+  });
+  $('#dictLocal').addEventListener('click', function (e) {
+    var art = e.target.closest('.word'); if (!art) return;
+    var v = VOCAB.filter(function (x) { return x.id === art.dataset.id; })[0];
+    if (!v) return;
+    if (e.target.closest('.speak-btn')) { speak(v.k); return; }
+    if (e.target.closest('.conj-toggle')) {
+      var btn = e.target.closest('.conj-toggle'), box = art.querySelector('.conj-box');
+      if (box.hidden) { if (!box.innerHTML) box.innerHTML = conjHTML(v); box.hidden = false; btn.textContent = '▾ 活用變化'; }
+      else { box.hidden = true; btn.textContent = '▸ 活用變化'; }
+      return;
+    }
+    var exEl = e.target.closest('.ex');
+    if (exEl) { var ja = exEl.querySelector('.ja'); speak(ja.dataset.plain || ja.textContent); }
+  });
+  $('#toDict').addEventListener('click', function () {
+    var q = $('#search').value.trim();
+    location.hash = 'dict'; showView('dict', true);
+    if (q) runDict(q);
   });
 
   /* =========================================================
