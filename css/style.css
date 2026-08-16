@@ -309,3 +309,96 @@ kbd{
   .cj-grid{grid-template-columns:1fr}
   .cj-label{width:84px}
 }
+
+/* ===== 今日 ===== */
+.today-panel{
+  max-width:600px;margin:0 auto;background:var(--surface);
+  border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow);
+}
+.today-panel h2{margin:0 0 18px;font-size:20px;text-align:center}
+.streak{text-align:center;font-size:15px;color:var(--text-dim);margin-bottom:18px}
+.streak b{color:var(--gold);font-size:22px}
+.today-stats{display:flex;gap:12px;margin-bottom:20px}
+.tstat{
+  flex:1;text-align:center;padding:16px 8px;border-radius:14px;
+  border:1px solid var(--line);background:var(--bg-soft);
+}
+.tstat b{display:block;font-size:34px;line-height:1.1;font-weight:700}
+.tstat span{font-size:12.5px;color:var(--text-dim)}
+.tstat.review b{color:var(--indigo)}
+.tstat.fresh b{color:var(--accent)}
+.today-hint{font-size:13px;color:var(--text-dim);text-align:center;margin:12px 0 0;line-height:1.6}
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;
+}
+.setting-row select{
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:14px;
+  background:var(--bg-soft);color:var(--text);
+}
+.level-block{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.level-title{font-size:13px;color:var(--text-dim);margin-bottom:12px}
+.level-title b{color:var(--text)}
+.level-bars{display:flex;gap:6px;align-items:flex-end}
+.lvbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.lvbar-track{width:100%;height:64px;display:flex;align-items:flex-end;background:var(--bg-soft);border-radius:5px;overflow:hidden}
+.lvbar-fill{width:100%;border-radius:5px 5px 0 0;min-height:2px;transition:height .3s}
+.lvbar-fill.none{background:var(--line)}
+.lvbar-fill.new{background:var(--accent)}
+.lvbar-fill.mid{background:var(--indigo)}
+.lvbar-fill.high{background:var(--green)}
+.lvbar-n{font-size:11.5px;font-weight:600}
+.lvbar-l{font-size:9.5px;color:var(--text-dim)}
+
+/* 練習卡 */
+.sess-card{
+  position:relative;background:var(--bg-soft);border:1px solid var(--line);border-radius:16px;
+  padding:30px 20px 24px;margin-bottom:16px;text-align:center;cursor:pointer;min-height:190px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.sess-tag{
+  position:absolute;top:12px;left:14px;font-size:11px;padding:2px 9px;border-radius:6px;
+  background:var(--line);color:var(--text-dim);
+}
+.sess-tag.is-new{background:var(--accent);color:#fff}
+.sess-kana{font-size:15px;color:var(--text-dim);letter-spacing:.1em;min-height:22px}
+.sess-word{font-size:44px;font-weight:700;letter-spacing:.03em;line-height:1.3}
+.sess-reveal{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);text-align:left}
+.sess-pos{
+  display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:6px;
+  background:var(--accent-soft);color:var(--accent);margin-bottom:6px;
+}
+.sess-mean{font-size:22px;font-weight:700;margin-bottom:10px}
+.sess-ex{display:flex;flex-direction:column;gap:7px;padding-left:11px;border-left:3px solid var(--line)}
+.grade-btns{display:flex;gap:8px}
+.grade{
+  flex:1;padding:12px 6px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--surface);color:var(--text);font-size:15px;font-weight:600;transition:.15s;
+}
+.grade em{display:block;font-style:normal;font-size:11px;font-weight:400;color:var(--text-dim);margin-top:2px}
+.grade.again:hover{border-color:var(--accent);color:var(--accent)}
+.grade.hard:hover{border-color:var(--gold);color:var(--gold)}
+.grade.good:hover{border-color:var(--green);color:var(--green)}
+.done-stats{display:flex;gap:12px;margin:18px 0}
+.dstat{flex:1;text-align:center;padding:14px 8px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line)}
+.dstat b{display:block;font-size:28px;font-weight:700}
+.dstat span{font-size:12px;color:var(--text-dim)}
+.dstat.good b{color:var(--green)}
+.dstat.hard b{color:var(--gold)}
+.dstat.again b{color:var(--accent)}
+#doneAgain{margin-bottom:9px}
+
+/* 熟練度標籤 */
+.lv-chip{
+  font-size:10.5px;padding:1px 7px;border-radius:5px;white-space:nowrap;
+  background:var(--bg-soft);border:1px solid var(--line);color:var(--text-dim);
+}
+.lv-chip.high{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.lv-chip.none{opacity:.65}
+
+@media (max-width:600px){
+  .today-panel{padding:18px}
+  .sess-word{font-size:36px}
+  .grade{font-size:14px}
+  .lvbar-l{font-size:8.5px}
+}

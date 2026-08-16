@@ -13,7 +13,7 @@
   <div class="topbar-inner">
     <h1 class="logo"><span class="logo-mark">語</span> N4 単語帳</h1>
     <div class="topbar-right">
-      <div class="progress-mini" title="已標記為「已背」的比例">
+      <div class="progress-mini" title="已學過的單字比例">
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <span id="progressText">0 / 0</span>
       </div>
@@ -21,7 +21,8 @@
     </div>
   </div>
   <nav class="tabs">
-    <button class="tab active" data-view="list">📖 單字表</button>
+    <button class="tab active" data-view="today">🎯 今日</button>
+    <button class="tab" data-view="list">📖 單字表</button>
     <button class="tab" data-view="card">🃏 單字卡</button>
     <button class="tab" data-view="quiz">📝 測驗</button>
   </nav>
@@ -29,8 +30,77 @@
 
 <main>
 
+  <!-- ============ 今日 ============ -->
+  <section id="view-today" class="view active">
+
+    <div id="todayHome" class="today-panel">
+      <div class="streak" id="streakBox">🔥 連續學習 <b>0</b> 天</div>
+
+      <div class="today-stats">
+        <div class="tstat review"><b id="dueCount">0</b><span>要複習</span></div>
+        <div class="tstat fresh"><b id="newCount">0</b><span>新單字</span></div>
+      </div>
+
+      <button class="big-btn" id="startSession">開始今天的練習 →</button>
+      <p class="today-hint" id="todayHint"></p>
+
+      <div class="setting-row">
+        <label for="newPerDay">每日新字量</label>
+        <select id="newPerDay">
+          <option value="5">5 個</option>
+          <option value="10" selected>10 個</option>
+          <option value="20">20 個</option>
+          <option value="30">30 個</option>
+          <option value="0">暫停學新字</option>
+        </select>
+      </div>
+
+      <div class="level-block">
+        <div class="level-title">熟練度分布　<span id="masteredText"></span></div>
+        <div class="level-bars" id="levelBars"></div>
+      </div>
+    </div>
+
+    <div id="todaySession" class="today-panel" hidden>
+      <div class="quiz-head">
+        <span id="sessProgress">0 / 0</span>
+        <div class="progress-bar wide"><div class="progress-fill" id="sessBar"></div></div>
+        <button class="mini-btn" id="sessQuit">結束</button>
+      </div>
+
+      <div class="sess-card" id="sessCard">
+        <span class="sess-tag" id="sessTag">新字</span>
+        <div class="sess-kana" id="sessKana"></div>
+        <div class="sess-word" id="sessWord"></div>
+        <div class="sess-reveal" id="sessReveal" hidden>
+          <div class="sess-pos" id="sessPos"></div>
+          <div class="sess-mean" id="sessMean"></div>
+          <div class="sess-ex" id="sessEx"></div>
+          <div id="sessConj"></div>
+        </div>
+      </div>
+
+      <button class="big-btn" id="sessShow">看答案（空白鍵）</button>
+      <div class="grade-btns" id="gradeBtns" hidden>
+        <button class="grade again" data-g="again">❌ 不會<em id="gAgain"></em></button>
+        <button class="grade hard" data-g="hard">🤔 模糊<em id="gHard"></em></button>
+        <button class="grade good" data-g="good">✅ 會<em id="gGood"></em></button>
+      </div>
+      <p class="kbd-hint">鍵盤：<kbd>空白</kbd> 看答案 ・ <kbd>1</kbd> 不會 ・ <kbd>2</kbd> 模糊 ・ <kbd>3</kbd> 會 ・ <kbd>S</kbd> 發音</p>
+    </div>
+
+    <div id="todayDone" class="today-panel" hidden>
+      <h2>今天的練習完成了 🎉</h2>
+      <div class="done-stats" id="doneStats"></div>
+      <p class="score-line" id="doneLine"></p>
+      <button class="big-btn" id="doneAgain">再練一輪</button>
+      <button class="big-btn ghost" id="doneBack">回到今日</button>
+    </div>
+
+  </section>
+
   <!-- ============ 單字表 ============ -->
-  <section id="view-list" class="view active">
+  <section id="view-list" class="view">
     <div class="toolbar">
       <input type="search" id="search" placeholder="搜尋 單字／假名／中文／例句…" autocomplete="off">
       <div class="chips" id="catChips">
@@ -42,11 +112,12 @@
       </div>
       <div class="filters">
         <label class="switch"><input type="checkbox" id="onlyFav"><span>只看收藏 ★</span></label>
-        <label class="switch"><input type="checkbox" id="hideLearned"><span>隱藏已背</span></label>
+        <label class="switch"><input type="checkbox" id="hideLearned"><span>隱藏已熟（Lv.4+）</span></label>
         <label class="switch"><input type="checkbox" id="hideMeaning"><span>遮住中文（自我測驗）</span></label>
         <select id="sortBy">
           <option value="default">五十音順</option>
           <option value="kana">依假名 A→Z</option>
+          <option value="level">依熟練度（不熟的先）</option>
           <option value="random">隨機打散</option>
         </select>
       </div>
@@ -187,6 +258,7 @@
 <script src="js/data/ra.js"></script>
 <script src="js/data/wa.js"></script>
 <script src="js/conjugate.js"></script>
+<script src="js/srs.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
